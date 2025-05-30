@@ -2,7 +2,6 @@ name: Release MMKV XCFramework
 
 on:
   push:
-    branches: [ "main" ]
     tags:
       - 'mmkv-v*'
   workflow_dispatch:
@@ -41,8 +40,7 @@ jobs:
         id: get_version
         run: |
           if [ "${{ github.event_name }}" == "push" ]; then
-            # VERSION=${GITHUB_REF#refs/tags/mmkv-v}
-            VERSION=1.3.14
+            VERSION=${GITHUB_REF#refs/tags/mmkv-v}
           else
             VERSION=${{ github.event.inputs.version }}
           fi
