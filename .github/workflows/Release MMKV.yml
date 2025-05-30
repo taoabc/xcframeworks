@@ -128,9 +128,7 @@ jobs:
         run: |
           VERSION=${{ steps.get_version.outputs.version }}
           
-          echo "MMKV-$VERSION.xcframework.zip checksum:"
           swift package compute-checksum build/MMKV-$VERSION.xcframework.zip > MMKV.xcframework.zip.checksum
-          echo "MMKVCore-$VERSION.xcframework.zip checksum:"
           swift package compute-checksum build/MMKVCore-$VERSION.xcframework.zip > MMKVCore.xcframework.zip.checksum
 
       - name: Create Release
@@ -174,7 +172,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/MMKV-${{ steps.get_version.outputs.version }}.xcframework.zip
+          asset_path: ./build/MMKV-${{ steps.get_version.outputs.version }}.xcframework.zip
           asset_name: MMKV-${{ steps.get_version.outputs.version }}.xcframework.zip
           asset_content_type: application/zip
 
@@ -184,6 +182,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/MMKVCore-${{ steps.get_version.outputs.version }}.xcframework.zip
+          asset_path: ./build/MMKVCore-${{ steps.get_version.outputs.version }}.xcframework.zip
           asset_name: MMKVCore-${{ steps.get_version.outputs.version }}.xcframework.zip
           asset_content_type: application/zip
