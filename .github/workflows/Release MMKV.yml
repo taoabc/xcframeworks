@@ -13,7 +13,7 @@ on:
         type: string
 
 jobs:
-  build:
+  build-and-release:
     name: Build MMKV from Pods to xcframework
     runs-on: macos-latest
     defaults:
@@ -129,6 +129,61 @@ jobs:
           VERSION=${{ steps.get_version.outputs.version }}
           
           echo "MMKV-$VERSION.xcframework.zip checksum:"
-          swift package compute-checksum build/MMKV-$VERSION.xcframework.zip
+          swift package compute-checksum build/MMKV-$VERSION.xcframework.zip > MMKV.xcframework.zip.checksum
           echo "MMKVCore-$VERSION.xcframework.zip checksum:"
-          swift package compute-checksum build/MMKVCore-$VERSION.xcframework.zip
+          swift package compute-checksum build/MMKVCore-$VERSION.xcframework.zip > MMKVCore.xcframework.zip.checksum
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: mmkv-v${{ steps.get_version.outputs.version }}
+          release_name: MMKV XCFramework v${{ steps.get_version.outputs.version }}
+          body: |
+            ## MMKV XCFramework v${{ steps.get_version.outputs.version }}
+            
+            This release includes MMKV.xcframework built from the official MMKV repository.
+            
+            ### Supported Platforms
+            - iOS (arm64)
+            - iOS Simulator (x86_64, arm64)
+            
+            #### Swift Package Manager
+            Add the following to your `Package.swift`:
+            ```swift
+            .binaryTarget(
+                name: "MMKV",
+                url: "https://github.com/${{ github.repository }}/releases/download/mmkv-v${{ steps.get_version.outputs.version }}/MMKV-v${{ steps.get_version.outputs.version }}.xcframework.zip",
+                checksum: "$(cat MMKV.xcframework.zip.checksum)"
+            )
+            .binaryTarget(
+                name: "MMKV",
+                url: "https://github.com/${{ github.repository }}/releases/download/mmkv-v${{ steps.get_version.outputs.version }}/MMKVCore-v${{ steps.get_version.outputs.version }}.xcframework.zip",
+                checksum: "$(cat MMMKVCore.xcframework.zip.checksum.txt)"
+            )
+            ```
+            
+          draft: false
+          prerelease: false
+    
+      - name: Upload MMKV XCFramework
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: build/MMKV-${{ steps.get_version.outputs.version }}.xcframework.zip
+          asset_name: MMKV-${{ steps.get_version.outputs.version }}.xcframework.zip
+          asset_content_type: application/zip
+
+      - name: Upload MMKVCore XCFramework
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: build/MMKVCore-${{ steps.get_version.outputs.version }}.xcframework.zip
+          asset_name: MMKVCore-${{ steps.get_version.outputs.version }}.xcframework.zip
+          asset_content_type: application/zip
