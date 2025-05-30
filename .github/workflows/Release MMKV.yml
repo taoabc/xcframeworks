@@ -125,11 +125,18 @@ jobs:
             build/MMKVCore-$VERSION.xcframework.zip
 
       - name: Compute Checksums
+        id: checksums
         run: |
           VERSION=${{ steps.get_version.outputs.version }}
           
-          swift package compute-checksum build/MMKV-$VERSION.xcframework.zip > MMKV.xcframework.zip.checksum
-          swift package compute-checksum build/MMKVCore-$VERSION.xcframework.zip > MMKVCore.xcframework.zip.checksum
+          MMKV_CHECKSUM=$(swift package compute-checksum build/MMKV-$VERSION.xcframework.zip)
+          MMKVCORE_CHECKSUM=$(swift package compute-checksum build/MMKVCore-$VERSION.xcframework.zip)
+          
+          echo "mmkv_checksum=$MMKV_CHECKSUM" >> $GITHUB_OUTPUT
+          echo "mmkvcore_checksum=$MMKVCORE_CHECKSUM" >> $GITHUB_OUTPUT
+          
+          echo "MMKV checksum: $MMKV_CHECKSUM"
+          echo "MMKVCore checksum: $MMKVCORE_CHECKSUM"
 
       - name: Create Release
         id: create_release
@@ -154,12 +161,12 @@ jobs:
             .binaryTarget(
                 name: "MMKV",
                 url: "https://github.com/${{ github.repository }}/releases/download/mmkv-v${{ steps.get_version.outputs.version }}/MMKV-${{ steps.get_version.outputs.version }}.xcframework.zip",
-                checksum: "$(cat MMKV.xcframework.zip.checksum)"
-            )
+                checksum: "${{ steps.checksums.outputs.mmkv_checksum }}"
+            ),
             .binaryTarget(
-                name: "MMKV",
+                name: "MMKVCore",
                 url: "https://github.com/${{ github.repository }}/releases/download/mmkv-v${{ steps.get_version.outputs.version }}/MMKVCore-${{ steps.get_version.outputs.version }}.xcframework.zip",
-                checksum: "$(cat MMMKVCore.xcframework.zip.checksum.txt)"
+                checksum: "${{ steps.checksums.outputs.mmkvcore_checksum }}"
             )
             ```
             
