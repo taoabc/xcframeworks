@@ -1,0 +1,8 @@
+This project aims to build xcframework for MMKV
+
+## Build
+1. Change the target version for MMKV in Podfile
+2. Run `pod install --repo-update` to generate Pods.xcodeproj which contains MMKV
+3. Run `build-xcframework.sh` to build the xcframework
+4. `MMKV.xcframework` and `MMKVCore.xcframework` will be generated in the root directory`
+5. Update the generated xcframeworks to the `MMKV` directory in the BaseLayer package
