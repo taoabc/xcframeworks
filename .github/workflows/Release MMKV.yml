@@ -66,3 +66,66 @@ jobs:
         run: |
           pod install --repo-update
           ls -al
+
+      - name: Build MMKV xcframework
+        run: |
+          PROJ="Pods/Pods.xcodeproj"
+          SCHEME="MMKV"
+          
+          xcodebuild archive \
+            -project "$PROJ" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/MMKV-iOS.xcarchive \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            SKIP_INSTALL=NO \
+            ENABLE_BITCODE=NO
+
+      - name: Build iOS Simulator Archive
+        run: |
+          PROJ="Pods/Pods.xcodeproj"
+          SCHEME="MMKV"
+          
+          xcodebuild archive \
+            -project "$PROJ" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -destination 'generic/platform=iOS Simulator' \
+            -archivePath build/MMKV-Sim.xcarchive \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            SKIP_INSTALL=NO \
+            ENABLE_BITCODE=NO
+
+      - name: Create XCFrameworks
+        run: |
+          xcodebuild -create-xcframework \
+            -archive build/MMKV-iOS.xcarchive -framework MMKV.framework \
+            -archive build/MMKV-Sim.xcarchive -framework MMKV.framework \
+            -output build/MMKV.xcframework
+
+          xcodebuild -create-xcframework \
+            -archive build/MMKV-iOS.xcarchive -framework MMKVCore.framework \
+            -archive build/MMKV-Sim.xcarchive -framework MMKVCore.framework \
+            -output build/MMKVCore.xcframework
+
+      - name: Create Zip Archives
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          
+          ditto -c -k --sequesterRsrc --keepParent \
+            build/MMKV.xcframework \
+            build/MMKV-$VERSION.xcframework.zip
+
+          ditto -c -k --sequesterRsrc --keepParent \
+            build/MMKVCore.xcframework \
+            build/MMKVCore-$VERSION.xcframework.zip
+
+      - name: Compute Checksums
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          
+          echo "MMKV-$VERSION.xcframework.zip checksum:"
+          swift package compute-checksum build/MMKV-$VERSION.xcframework.zip
+          echo "MMKVCore-$VERSION.xcframework.zip checksum:"
+          swift package compute-checksum build/MMKVCore-$VERSION.xcframework.zip
