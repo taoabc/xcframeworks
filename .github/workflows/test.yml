@@ -1,0 +1,59 @@
+name: 手动触发示例
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '部署环境'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      
+      version:
+        description: '版本号'
+        required: true
+        default: '1.0.0'
+        type: string
+      
+      enable-debug:
+        description: '启用调试模式'
+        required: false
+        default: false
+        type: boolean
+      
+      log-level:
+        description: '日志级别'
+        required: false
+        default: 'info'
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+      
+      - name: 显示输入参数
+        run: |
+          echo "环境: ${{ inputs.environment }}"
+          echo "版本: ${{ inputs.version }}"
+          echo "调试模式: ${{ inputs.enable-debug }}"
+          echo "日志级别: ${{ inputs.log-level }}"
+      
+      - name: 部署应用
+        run: |
+          # 根据输入参数执行不同的部署逻辑
+          if [[ "${{ inputs.environment }}" == "production" ]]; then
+            echo "部署到生产环境..."
+          else
+            echo "部署到 ${{ inputs.environment }} 环境..."
+          fi
