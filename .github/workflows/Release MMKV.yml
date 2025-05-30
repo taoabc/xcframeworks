@@ -70,7 +70,7 @@ jobs:
         run: |
           pod install --repo-update
 
-      - name: Build MMKV xcframework
+      - name: Build iOS Archive
         run: |
           PROJ="Pods/Pods.xcodeproj"
           SCHEME="MMKV"
@@ -153,12 +153,12 @@ jobs:
             ```swift
             .binaryTarget(
                 name: "MMKV",
-                url: "https://github.com/${{ github.repository }}/releases/download/mmkv-v${{ steps.get_version.outputs.version }}/MMKV-v${{ steps.get_version.outputs.version }}.xcframework.zip",
+                url: "https://github.com/${{ github.repository }}/releases/download/mmkv-v${{ steps.get_version.outputs.version }}/MMKV-${{ steps.get_version.outputs.version }}.xcframework.zip",
                 checksum: "$(cat MMKV.xcframework.zip.checksum)"
             )
             .binaryTarget(
                 name: "MMKV",
-                url: "https://github.com/${{ github.repository }}/releases/download/mmkv-v${{ steps.get_version.outputs.version }}/MMKVCore-v${{ steps.get_version.outputs.version }}.xcframework.zip",
+                url: "https://github.com/${{ github.repository }}/releases/download/mmkv-v${{ steps.get_version.outputs.version }}/MMKVCore-${{ steps.get_version.outputs.version }}.xcframework.zip",
                 checksum: "$(cat MMMKVCore.xcframework.zip.checksum.txt)"
             )
             ```
